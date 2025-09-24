@@ -1,0 +1,66 @@
+apiVersion: automation.cloudbees.io/v1alpha1
+kind: workflow
+name: main-test-workflow
+on:
+  workflow_dispatch:
+    inputs:
+      ENV:
+        type: choice
+        options:
+          - QA
+          - PROD
+          - PREPROD
+        default: QA
+        required: true
+      TestTag:
+        type: choice
+        options:
+          - "@FmE2E"
+          - "@AspmRegression"
+          - "@BetterTogetherRegression"
+          - "@CoreRegression"
+          - "@NinjaRegression"
+          - "@Onboarding"
+          - "@CdroRegression"
+          - "@WorkflowRegression"
+        default: "@FmE2E"
+        required: true
+jobs:
+  test:
+    needs: codecheck
+    steps:
+      - name: Manual Test Trigger
+        id: detect-env
+        if: ${{ cloudbees.event_name == 'workflow_dispatch' }}
+        uses: docker://alpine:3.19
+        shell: sh
+        run: |
+          echo "${{ inputs.TestTag }}" > "$CLOUDBEES_OUTPUTS/test_tag"
+          echo "${{ inputs.ENV }}" > "$CLOUDBEES_OUTPUTS/env"
+          test_tag="${{ inputs.TestTag }}"
+          get_file_name() {
+            case "$1" in
+              "@FmE2E") echo "fm" ;;
+              "@AspmRegression") echo "aspm" ;;
+              "@BetterTogetherRegression") echo "betterTogether" ;;
+              "@CoreRegression") echo "core" ;;
+              "@NinjaRegression") echo "ninja" ;;
+              "@Onboarding") echo "onboarding" ;;
+              "@CdroRegression") echo "workflow_cdro" ;;
+              "@WorkflowRegression") echo "workflow" ;;
+              *)
+                echo "Unknown test tag: '$1'" >&2
+                exit 1
+                ;;
+            esac
+          }
+          raw_file_name="$(get_file_name "$test_tag")"
+          file_name=$(echo "$raw_file_name" | tr -d '\r\n')
+          echo "$file_name" > "$CLOUDBEES_OUTPUTS/fileName"
+      - name: check parameters
+        uses: docker://alpine:3.19
+        shell: sh
+        run: |
+          echo ${{ steps.detect-env.outputs.env }}
+          echo ${{ steps.detect-env.outputs.test_tag }}
+          echo ${{ steps.detect-env.outputs.fileName }}
