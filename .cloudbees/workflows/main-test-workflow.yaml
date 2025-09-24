@@ -27,7 +27,6 @@ on:
         required: true
 jobs:
   test:
-    needs: codecheck
     steps:
       - name: Manual Test Trigger
         id: detect-env
