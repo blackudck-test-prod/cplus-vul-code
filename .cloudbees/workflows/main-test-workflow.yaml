@@ -39,14 +39,14 @@ jobs:
           test_tag="${{ inputs.TestTag }}"
           get_file_name() {
             case "$1" in
-              "@FmE2E") echo "fm" ;;
-              "@AspmRegression") echo "aspm" ;;
-              "@BetterTogetherRegression") echo "betterTogether" ;;
-              "@CoreRegression") echo "core" ;;
-              "@NinjaRegression") echo "ninja" ;;
-              "@Onboarding") echo "onboarding" ;;
-              "@CdroRegression") echo "workflow_cdro" ;;
-              "@WorkflowRegression") echo "workflow" ;;
+              "@FmE2E") echo fm;;
+              "@AspmRegression") echo aspm;;
+              "@BetterTogetherRegression") echo betterTogether;;
+              "@CoreRegression") echo core;;
+              "@NinjaRegression") echo ninja;;
+              "@Onboarding") echo onboarding;;
+              "@CdroRegression") echo workflow_cdro;;
+              "@WorkflowRegression") echo workflow;;
               *)
                 echo "Unknown test tag: '$1'" >&2
                 exit 1
@@ -55,11 +55,11 @@ jobs:
           }
           raw_file_name="$(get_file_name "$test_tag")"
           file_name=$(echo "$raw_file_name" | tr -d '\r\n')
-          echo "$file_name" > "$CLOUDBEES_OUTPUTS/fileName"
+          echo "$file_name" > "$CLOUDBEES_OUTPUTS/file_name"
       - name: check parameters
         uses: docker://alpine:3.19
         shell: sh
         run: |
           echo ${{ steps.detect-env.outputs.env }}
           echo ${{ steps.detect-env.outputs.test_tag }}
-          echo ${{ steps.detect-env.outputs.fileName }}
+          echo ${{ steps.detect-env.outputs.file_name }}
